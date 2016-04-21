@@ -23,7 +23,7 @@ import scala.concurrent.duration.FiniteDuration;
 import static akka.pattern.Patterns.ask;
 import static akka.pattern.Patterns.pipe;
 
-public class ResponseTimeMultiActorActivity extends AppCompatActivity {
+public class TestActivity extends AppCompatActivity {
 
     private static final String ACTION = "tailChopping";
 

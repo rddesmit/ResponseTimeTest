@@ -40,26 +40,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
-    private final Action1<Object> navigateToMultiThreadActivity = new Action1<Object>() {
-        @Override
-        public void call(Object o) {
-            navigateToResponseTimeMultiThreadActivity();
-        }
-    };
-
-    private final Action1<Object> navigateToSingleThreadActivity = new Action1<Object>() {
-        @Override
-        public void call(Object o) {
-            navigateToResponseTimeSingleThreadActivity();
-        }
-    };
-
-    private final Action1<Object> navigateToSingleActorActivity = new Action1<Object>() {
-        @Override
-        public void call(Object o) {
-            navigateToResponseTimeSingleActorActivity();
-        }
-    };
 
     private final Action1<Object> navigateToMultiActorActivity = new Action1<Object>() {
         @Override
@@ -70,38 +50,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //observables
     private static final Subject<Boolean, Boolean> hasPermission = BehaviorSubject.create();
-    private static final Subject<Boolean, Boolean> buttonOneClicked = PublishSubject.create();
-    private static final Subject<Boolean, Boolean> buttonTwoClicked = PublishSubject.create();
-    private static final Subject<Boolean, Boolean> buttonThreeClicked = PublishSubject.create();
-    private static final Subject<Boolean, Boolean> buttonFourClicked = PublishSubject.create();
+    private static final Subject<Boolean, Boolean> buttonClicked = PublishSubject.create();
 
-    private static final Observable<Boolean> navigateButtonOne = Observable
-            .combineLatest(hasPermission, buttonOneClicked, areBothTrue)
-            .filter(isTrue);
-    private static final Observable<Boolean> navigateButtonTwo = Observable
-            .combineLatest(hasPermission, buttonTwoClicked, areBothTrue)
-            .filter(isTrue);
-    private static final Observable<Boolean> navigateButtonThree = Observable
-            .combineLatest(hasPermission, buttonThreeClicked, areBothTrue)
-            .filter(isTrue);
-    private static final Observable<Boolean> navigateButtonFour = Observable
-            .combineLatest(hasPermission, buttonFourClicked, areBothTrue)
+    private static final Observable<Boolean> navigate = Observable
+            .combineLatest(hasPermission, buttonClicked, areBothTrue)
             .filter(isTrue);
 
-    //subscriptions
-    private Subscription buttonOneSubscription;
-    private Subscription buttonTwoSubscription;
-    private Subscription buttonThreeSubscription;
-    private Subscription buttonFourSubscription;
+    private Subscription buttonSubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        findViewById(R.id.button).setOnClickListener(this);
-        findViewById(R.id.button2).setOnClickListener(this);
-        findViewById(R.id.button3).setOnClickListener(this);
         findViewById(R.id.button4).setOnClickListener(this);
 
         if(hasPermissions()){
@@ -116,11 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
-
-        buttonOneSubscription = navigateButtonOne.subscribe(navigateToSingleThreadActivity);
-        buttonTwoSubscription = navigateButtonTwo.subscribe(navigateToMultiThreadActivity);
-        buttonThreeSubscription = navigateButtonThree.subscribe(navigateToSingleActorActivity);
-        buttonFourSubscription = navigateButtonFour.subscribe(navigateToMultiActorActivity);
+        buttonSubscription = navigate.subscribe(navigateToMultiActorActivity);
     }
 
     private boolean hasPermissions(){
@@ -131,23 +88,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE);
     }
 
-    private void navigateToResponseTimeMultiThreadActivity(){
-        final Intent intent = new Intent(this, ResponseTimeMultiThreadActivity.class);
-        startActivity(intent);
-    }
-
-    private void navigateToResponseTimeSingleThreadActivity(){
-        final Intent intent = new Intent(this, ResponseTimeSingleThreadActivity.class);
-        startActivity(intent);
-    }
-
-    private void navigateToResponseTimeSingleActorActivity(){
-        final Intent intent = new Intent(this, ResponseTimeSingleActorActivity.class);
-        startActivity(intent);
-    }
-
     private void navigateToResponseTimeMultiActorActivity(){
-        final Intent intent = new Intent(this, ResponseTimeMultiActorActivity.class);
+        final Intent intent = new Intent(this, TestActivity.class);
         startActivity(intent);
     }
 
@@ -168,17 +110,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.button:
-                buttonOneClicked.onNext(true);
-                break;
-            case R.id.button2:
-                buttonTwoClicked.onNext(true);
-                break;
-            case R.id.button3:
-                buttonThreeClicked.onNext(true);
-                break;
             case R.id.button4:
-                buttonFourClicked.onNext(true);
+                buttonClicked.onNext(true);
                 break;
 
         }
@@ -187,10 +120,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onPause() {
         super.onPause();
-
-        buttonOneSubscription.unsubscribe();
-        buttonTwoSubscription.unsubscribe();
-        buttonThreeSubscription.unsubscribe();
-        buttonFourSubscription.unsubscribe();
+        buttonSubscription.unsubscribe();
     }
 }
